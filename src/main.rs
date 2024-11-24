@@ -14,12 +14,17 @@ fn main() {
                 println!("accepted new connection");
 
                 let mut buf = [0; 512];
-                stream.read(&mut buf).unwrap();
+                loop {
+                    let read_count = stream.read(&mut buf).unwrap();
+                    if read_count == 0 {
+                        break;
+                    }
 
-                // "b" make it a byte string
-                // "unwrap" assert that no errors occur during the write operation.
-                // If an error does occur, it will cause the program to panic and exit.
-                stream.write_all(b"+PONG\r\n").unwrap();
+                    // "b" make it a byte string
+                    // "unwrap" assert that no errors occur during the write operation.
+                    // If an error does occur, it will cause the program to panic and exit.
+                    stream.write_all(b"+PONG\r\n").unwrap();
+                }
             }
             Err(e) => {
                 println!("error: {}", e);
