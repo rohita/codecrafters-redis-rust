@@ -27,6 +27,8 @@ fn main() {
 
 fn handle_client(stream: TcpStream) {
     let mut handler = resp::RespHandler::new(stream);
+    let mut storage: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+
     println!("Starting read loop");
     loop {
         let value = handler.read_value().unwrap();
@@ -37,6 +39,8 @@ fn handle_client(stream: TcpStream) {
             match command.to_lowercase().as_str() {
                 "ping" => Value::SimpleString("PONG".to_string()),
                 "echo" => args.first().unwrap().clone(),
+                "set" => set(&mut storage, unpack_bulk_str(args[0].clone()).unwrap(), unpack_bulk_str(args[1].clone()).unwrap()),
+                "get" => get(&storage, unpack_bulk_str(args[0].clone()).unwrap()),
                 c => panic!("Cannot handle command {}", c),
             }
         } else {
@@ -63,5 +67,17 @@ fn unpack_bulk_str(value: Value) -> Result<String> {
     match value {
         Value::BulkString(s) => Ok(s),
         _ => Err(anyhow::anyhow!("Expected command to be a bulk string"))
+    }
+}
+
+fn set(storage: &mut std::collections::HashMap<String, String>, key: String, value: String) -> Value {
+    storage.insert(key, value);
+    Value::SimpleString("OK".to_string())
+}
+
+fn get(storage: &std::collections::HashMap<String, String>, key: String) -> Value {
+    match storage.get(&key) {
+        Some(v) => Value::BulkString(v.to_string()),
+        None => Value::Null,
     }
 }

@@ -1,3 +1,5 @@
+// Ref: ThetaSinner
+
 #![allow(unused_imports)]
 use std::io::{Read,Write};
 use std::net::{TcpListener,TcpStream};
@@ -10,6 +12,7 @@ pub enum Value {
     SimpleString(String),
     BulkString(String),
     Array(Vec<Value>),
+    Null,
 }
 impl Value {
     pub fn serialize(self) -> String {
