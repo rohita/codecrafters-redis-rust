@@ -1,9 +1,11 @@
 #![allow(unused_imports)]
 use std::net::{TcpListener,TcpStream};
+use std::default::Default;
 use anyhow::Result;
 use resp::Value;
 
 mod resp;
+mod db;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
@@ -27,7 +29,7 @@ fn main() {
 
 fn handle_client(stream: TcpStream) {
     let mut handler = resp::RespHandler::new(stream);
-    let mut storage: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+    let mut storage = db::Db::new();
 
     println!("Starting read loop");
     loop {
@@ -39,7 +41,7 @@ fn handle_client(stream: TcpStream) {
             match command.to_lowercase().as_str() {
                 "ping" => Value::SimpleString("PONG".to_string()),
                 "echo" => args.first().unwrap().clone(),
-                "set" => set(&mut storage, unpack_bulk_str(args[0].clone()).unwrap(), unpack_bulk_str(args[1].clone()).unwrap()),
+                "set" => set(&mut storage, args),
                 "get" => get(&storage, unpack_bulk_str(args[0].clone()).unwrap()),
                 c => panic!("Cannot handle command {}", c),
             }
@@ -70,13 +72,24 @@ fn unpack_bulk_str(value: Value) -> Result<String> {
     }
 }
 
-fn set(storage: &mut std::collections::HashMap<String, String>, key: String, value: String) -> Value {
-    storage.insert(key, value);
+fn set(storage: &mut db::Db, args: Vec<Value>) -> Value {
+    let key = unpack_bulk_str(args[0].clone()).unwrap();
+    let value = unpack_bulk_str(args[1].clone()).unwrap();
+    let len = args.len();
+
+    let expires: u128 = if len < 4 {
+        0
+    } else {
+        unpack_bulk_str(args[3].clone()).unwrap().parse::<u128>().unwrap()
+    };
+    
+    println!("Setting key {} and value {} and expires {}", key, value, expires);
+    storage.set(key, value, expires);
     Value::SimpleString("OK".to_string())
 }
 
-fn get(storage: &std::collections::HashMap<String, String>, key: String) -> Value {
-    match storage.get(&key) {
+fn get(storage: &db::Db, key: String) -> Value {
+    match storage.get(key) {
         Some(v) => Value::BulkString(v.to_string()),
         None => Value::Null,
     }
