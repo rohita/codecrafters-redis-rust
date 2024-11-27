@@ -1,0 +1,21 @@
+use crate::command::Command;
+use crate::Value;
+use crate::db;
+
+pub struct Echo {
+    pub text: String,
+}
+
+impl Echo {
+    pub fn new(args: Vec<Value>) -> Self {
+        Echo {
+            text: args[0].clone().unpack_str(),
+        }
+    }
+}
+
+impl Command for Echo {
+    fn handle(&self, _storage: &mut db::Db) -> Value {
+        Value::BulkString(self.text.clone())
+    }
+}

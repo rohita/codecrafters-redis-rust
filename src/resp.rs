@@ -7,6 +7,7 @@ use bytes::BytesMut;
 use bytes::BufMut;
 use anyhow::Result;
 
+// Rename to 'RESPData'
 #[derive(Clone, Debug)]
 pub enum Value {
     SimpleString(String),
@@ -23,11 +24,21 @@ impl Value {
             _ => panic!("Unsupported value for serialize"),
         }
     }
+
+    pub fn unpack_str(self) -> String {
+        match self {
+            Value::SimpleString(s) => s,
+            Value::BulkString(s) => s,
+            _ => panic!("Expected command to be a simple or bulk string")
+        }
+    }
 }
+
 pub struct RespHandler {
     stream: TcpStream,
     buffer: BytesMut,
 }
+
 impl RespHandler {
     pub fn new(stream: TcpStream) -> Self {
         RespHandler {
