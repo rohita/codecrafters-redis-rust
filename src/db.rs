@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 use std::time::Instant;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Item {
     pub value: String,
     pub created: Instant,
     pub expires: u128,
 }
 
+#[derive(Clone)]
 pub struct Db {
     pub storage: HashMap<String, Item>,
 }
@@ -37,6 +38,10 @@ impl Db {
             true => None,
             false => Some(item.value.clone()),
         }
+    }
+
+    pub fn keys(&self) -> Vec<String> {
+        self.storage.keys().cloned().collect()
     }
 }
 
