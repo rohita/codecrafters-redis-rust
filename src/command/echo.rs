@@ -1,6 +1,7 @@
 use crate::command::Command;
 use crate::Value;
 use crate::db;
+use std::collections::HashMap;
 
 pub struct Echo {
     pub text: String,
@@ -15,7 +16,7 @@ impl Echo {
 }
 
 impl Command for Echo {
-    fn handle(&self, _storage: &mut db::Db) -> Value {
+    fn handle(&self, _storage: &mut db::Db, _config: HashMap::<String, String>) -> Value {
         Value::BulkString(self.text.clone())
     }
 }

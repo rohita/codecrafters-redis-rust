@@ -20,8 +20,10 @@ impl Value {
         match self {
             Value::SimpleString(s) => format!("+{}\r\n", s),
             Value::BulkString(s) => format!("${}\r\n{}\r\n", s.chars().count(), s),
+            Value::Array(v) => format!("*{}\r\n{}",
+                v.len(),
+                v.into_iter().map(|s| s.serialize()).collect::<Vec<_>>().join("")),
             Value::Null => "$-1\r\n".to_string(),
-            _ => panic!("Unsupported value for serialize"),
         }
     }
 
@@ -69,6 +71,7 @@ fn parse_message(buffer: BytesMut) -> Result<(Value, usize)> {
         _ => Err(anyhow::anyhow!("Not a known value type {:?}", buffer)),
     }
 }
+
 fn parse_simple_string(buffer: BytesMut) -> Result<(Value, usize)> {
     if let Some((line, len)) = read_until_crlf(&buffer[1..]) {
         let string = String::from_utf8(line.to_vec()).unwrap();
@@ -76,6 +79,7 @@ fn parse_simple_string(buffer: BytesMut) -> Result<(Value, usize)> {
     }
     return Err(anyhow::anyhow!("Invalid string {:?}", buffer));
 }
+
 fn parse_array(buffer: BytesMut) -> Result<(Value, usize)> {
     let (array_length, mut bytes_consumed) = if let Some((line, len)) = read_until_crlf(&buffer[1..]) {
         let array_length = parse_int(line)?;
@@ -91,6 +95,7 @@ fn parse_array(buffer: BytesMut) -> Result<(Value, usize)> {
     }
     return Ok((Value::Array(items), bytes_consumed))
 }
+
 fn parse_bulk_string(buffer: BytesMut) -> Result<(Value, usize)> {
     let (bulk_str_len, bytes_consumed) = if let Some((line, len)) = read_until_crlf(&buffer[1..]) {
         let bulk_str_len = parse_int(line)?;

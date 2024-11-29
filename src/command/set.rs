@@ -1,6 +1,7 @@
 use crate::command::Command;
 use crate::Value;
 use crate::db;
+use std::collections::HashMap;
 
 pub struct Set {
     pub key: String,
@@ -32,7 +33,7 @@ impl Set {
 }
 
 impl Command for Set {
-    fn handle(&self, storage: &mut db::Db) -> Value {
+    fn handle(&self, storage: &mut db::Db, _config: HashMap::<String, String>) -> Value {
         println!("Setting key: {}, value: {}, expires: {}", self.key, self.value, self.expires());
         storage.set(self.key.clone(), self.value.clone(), self.expires());
         Value::SimpleString("OK".to_string())

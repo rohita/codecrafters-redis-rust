@@ -2,17 +2,23 @@ mod echo;
 mod get;
 mod ping;
 mod set;
+mod config;
 
 use crate::resp::Value;
 use anyhow::Result;
 use crate::db;
+use std::collections::HashMap;
 
 use self::{
-    get::Get, set::Set, ping::Ping, echo::Echo
+    get::Get, set::Set, ping::Ping, echo::Echo,
+    config::Config,
 };
 
 pub trait Command {
-    fn handle(&self, storage: &mut db::Db) -> Value;
+    fn handle(
+        &self, storage:
+        &mut db::Db,
+        config: HashMap::<String, String>) -> Value;
 }
 
 pub fn from(value: Value) -> Box<dyn Command> {
@@ -23,6 +29,7 @@ pub fn from(value: Value) -> Box<dyn Command> {
             "echo" => Box::new(Echo::new(args)),
             "set" => Box::new(Set::new(args)),
             "get" => Box::new(Get::new(args)),
+            "config" => Box::new(Config::new(args)),
             c => panic!("Cannot handle command {}", c),
         }
     };
