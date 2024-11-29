@@ -18,10 +18,10 @@ impl Config {
 }
 
 impl Command for Config {
-    fn handle(&self, _storage: &mut db::Db, config: HashMap::<String, String>) -> Value {
+    fn handle(&self, storage: &mut db::Db) -> Value {
         match self.subcommand.as_str() {
             "GET" => {
-                match config.get(&self.parameters[0].clone().unpack_str()) {
+                match storage.config().get(&self.parameters[0].clone().unpack_str()) {
                     Some(v) => {
                         let mut items = vec![];
                         items.push(self.parameters[0].clone());

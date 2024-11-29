@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::time::Instant;
+use std::fs;
 
 #[derive(Debug, Clone)]
 pub struct Item {
@@ -10,14 +11,14 @@ pub struct Item {
 
 #[derive(Clone)]
 pub struct Db {
-    pub storage: HashMap<String, Item>,
+    config: HashMap::<String, String>,
+    store: HashMap<String, Item>,
 }
 
 impl Db {
-    pub fn new() -> Self {
-        Db {
-            storage: HashMap::new(),
-        }
+    pub fn from_config(config: HashMap::<String, String>) -> Self {
+        let storage = read_file(config.clone());
+        Db { config, store: storage }
     }
 
     pub fn set(&mut self, key: String, value: String, expires: u128) {
@@ -26,11 +27,11 @@ impl Db {
             created: Instant::now(),
             expires,
         };
-        self.storage.insert(key, item);
+        self.store.insert(key, item);
     }
 
     pub fn get(&self, key: String) -> Option<String> {
-        let item = self.storage.get(&key)?;
+        let item = self.store.get(&key)?;
         let is_expired =
             item.expires > 0 && item.created.elapsed().as_millis() > item.expires;
 
@@ -41,12 +42,50 @@ impl Db {
     }
 
     pub fn keys(&self) -> Vec<String> {
-        self.storage.keys().cloned().collect()
+        self.store.keys().cloned().collect()
+    }
+
+    pub fn config(&self) -> HashMap<String, String> {
+        self.config.clone()
     }
 }
 
-impl Default for Db {
-    fn default() -> Self {
-        Db::new()
+fn read_file(config: HashMap<String, String>) -> HashMap<String, Item> {
+    let mut storage = HashMap::new();
+
+    if let Some(Ok(contents)) = config
+        .get("dir")
+        .map(|dir| {
+            config
+                .get("dbfilename")
+                .map(|filename| format!("{dir}/{filename}"))
+        })
+        .flatten()
+        .map(fs::read)
+    {
+        let mut iter = contents.into_iter().skip_while(|&b| b != 0xFB).skip(1);
+        let _hashtable_size = iter.next();
+        let _expire_hashtable_size = iter.next();
+        let _value_type = iter.next();
+        let key_len = iter.next().unwrap();
+        let mut key_chars = Vec::new();
+        for _ in 0..key_len {
+            key_chars.push(iter.next().unwrap() as char);
+        }
+        let value_len = iter.next().unwrap();
+        let mut value_chars = Vec::new();
+        for _ in 0..value_len {
+            value_chars.push(iter.next().unwrap() as char);
+        }
+        let key = key_chars.into_iter().collect();
+        let value = value_chars.into_iter().collect();
+        println!("Loaded from file = key: {:?}, value: {:?}", key, value);
+        storage.insert(key, Item {
+            value,
+            created: Instant::now(),
+            expires: 0,
+        });
     }
+
+    storage
 }

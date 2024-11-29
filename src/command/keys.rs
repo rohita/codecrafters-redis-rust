@@ -16,7 +16,7 @@ impl Keys {
 }
 
 impl Command for Keys {
-    fn handle(&self, storage: &mut db::Db, _config: HashMap::<String, String>) -> Value {
+    fn handle(&self, storage: &mut db::Db) -> Value {
         let keys = storage
             .keys()
             .iter()

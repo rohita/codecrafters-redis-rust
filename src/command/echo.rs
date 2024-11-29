@@ -16,7 +16,7 @@ impl Echo {
 }
 
 impl Command for Echo {
-    fn handle(&self, _storage: &mut db::Db, _config: HashMap::<String, String>) -> Value {
+    fn handle(&self, _storage: &mut db::Db) -> Value {
         Value::BulkString(self.text.clone())
     }
 }

@@ -16,10 +16,7 @@ use self::{
 };
 
 pub trait Command {
-    fn handle(
-        &self, storage:
-        &mut db::Db,
-        config: HashMap::<String, String>) -> Value;
+    fn handle(&self, storage: &mut db::Db) -> Value;
 }
 
 pub fn from(value: Value) -> Box<dyn Command> {

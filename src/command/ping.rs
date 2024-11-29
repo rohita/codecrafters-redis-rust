@@ -12,7 +12,7 @@ impl Ping {
 }
 
 impl Command for Ping {
-    fn handle(&self, _storage: &mut db::Db, _config: HashMap::<String, String>) -> Value {
+    fn handle(&self, _storage: &mut db::Db) -> Value {
         Value::SimpleString("PONG".to_string())
     }
 }
