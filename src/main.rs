@@ -13,15 +13,23 @@ mod command;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
-
+    let mut port = "6379".to_string();
     let mut config = HashMap::<String, String>::new();
-    if args.len() > 2 && (args[1] == "--dir" || args[3] == "--dbfilename") {
-        config.insert("dir".to_string(), args[2].to_string());
-        config.insert("dbfilename".to_string(), args[4].to_string());
-    }
-    println!("Config: {:?}", config);
+    println!("{:?}", args);
 
+    for index in (1..args.len()).step_by(2) {
+        if args[index] == "--dir" {
+            config.insert("dir".to_string(), args[index + 1].to_string());
+        } else if args[index] == "--dbfilename" {
+            config.insert("dbfilename".to_string(), args[index + 1].to_string());
+        } else if args[index] == "--port" {
+            port = args[index + 1].to_string();
+        }
+    }
+
+    println!("Config: {:?}, Port: {}", config, port);
+
+    let listener = TcpListener::bind(format!("127.0.0.1:{port}")).unwrap();
     let storage = db::Db::from_config(config.clone());
 
     // stream represents the incoming connection
