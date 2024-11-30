@@ -3,6 +3,8 @@ use crate::command::Command;
 use crate::Value;
 use crate::db;
 use std::collections::HashMap;
+use crate::DEFAULT_MASTER_REPLID;
+use crate::DEFAULT_MASTER_OFFSET;
 
 pub struct Info {
     pub section: String,
@@ -24,7 +26,7 @@ impl Command for Info {
         };
 
         Value::BulkString(
-        format!("role:{}\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb\r\nmaster_repl_offset:0", role)
+        format!("role:{}\r\nmaster_replid:{}\r\nmaster_repl_offset:{}", role, DEFAULT_MASTER_REPLID, DEFAULT_MASTER_OFFSET)
         )
     }
 }
