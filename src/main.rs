@@ -13,22 +13,29 @@ mod command;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut port = "6379".to_string();
     let mut config = HashMap::<String, String>::new();
     println!("{:?}", args);
 
     for index in (1..args.len()).step_by(2) {
-        if args[index] == "--dir" {
-            config.insert("dir".to_string(), args[index + 1].to_string());
-        } else if args[index] == "--dbfilename" {
-            config.insert("dbfilename".to_string(), args[index + 1].to_string());
-        } else if args[index] == "--port" {
-            port = args[index + 1].to_string();
-        }
+        // if args[index] == "--dir" {
+        //     config.insert("dir".to_string(), args[index + 1].to_string());
+        // } else if args[index] == "--dbfilename" {
+        //     config.insert("dbfilename".to_string(), args[index + 1].to_string());
+        // } else if args[index] == "--port" {
+        //     port = args[index + 1].to_string();
+        // }
+
+        match args[index].as_str() {
+            "--dir" =>  config.insert("dir".to_string(), args[index + 1].to_string()),
+            "--dbfilename" => config.insert("dbfilename".to_string(), args[index + 1].to_string()),
+            "--port" => config.insert("port".to_string(), args[index + 1].to_string()),
+            "--replicaof" => config.insert("replicaof".to_string(), args[index + 1].to_string()),
+            &_ => todo!(),
+        };
     }
 
-    println!("Config: {:?}, Port: {}", config, port);
-
+    println!("Config: {:?}", config);
+    let port: String = config.get("port").unwrap_or(&"6379".to_string()).to_string();
     let listener = TcpListener::bind(format!("127.0.0.1:{port}")).unwrap();
     let storage = db::Db::from_config(config.clone());
 

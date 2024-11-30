@@ -16,7 +16,12 @@ impl Info {
 }
 
 impl Command for Info {
-    fn handle(&self, _storage: &mut db::Db) -> Value {
-        Value::BulkString("role:master".to_string())
+    fn handle(&self, storage: &mut db::Db) -> Value {
+        match storage.config().get("replicaof") {
+            Some(_v) => {
+                Value::BulkString("role:slave".to_string())
+            },
+            None => Value::BulkString("role:master".to_string()),
+        }
     }
 }
