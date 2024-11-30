@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::command::Command;
 use crate::Value;
 use crate::db;

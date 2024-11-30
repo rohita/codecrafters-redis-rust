@@ -5,6 +5,8 @@ mod set;
 mod config;
 mod keys;
 mod info;
+mod replconf;
+mod psync;
 
 use crate::resp::Value;
 use anyhow::Result;
@@ -13,7 +15,8 @@ use std::collections::HashMap;
 
 use self::{
     get::Get, set::Set, ping::Ping, echo::Echo,
-    config::Config, keys::Keys, info::Info,
+    config::Config, keys::Keys, info::Info, replconf::ReplConf,
+    psync::Psync,
 };
 
 pub trait Command {
@@ -31,6 +34,8 @@ pub fn from(value: Value) -> Box<dyn Command> {
             "config" => Box::new(Config::new(args)),
             "keys" => Box::new(Keys::new(args)),
             "info" => Box::new(Info::new(args)),
+            "replconf" => Box::new(ReplConf::new(args)),
+            "psync" => Box::new(Psync::new(args)),
             c => panic!("Cannot handle command {}", c),
         }
     };
