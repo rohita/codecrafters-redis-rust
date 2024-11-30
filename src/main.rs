@@ -11,6 +11,7 @@ use resp::Value;
 mod resp;
 mod db;
 mod command;
+mod client;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -29,10 +30,13 @@ fn main() {
 
     if let Some(master) = config.get("replicaof") {
         let addr = master.replace(' ', ":");
-        let mut sock = TcpStream::connect(addr).unwrap();
-
-        let ping_resp = Value::Array(vec![Value::BulkString("PING".to_string())]);
-        sock.write_all(ping_resp.serialize().as_bytes()).unwrap();
+        let mut master = client::ReplicaClient::connect(addr);
+        let resp = master.ping();
+        println!("Got ping resp {:?}", resp);
+        let resp = master.replconf("listening-port".to_string(), port);
+        println!("Got listening-port resp {:?}", resp);
+        let resp = master.replconf("capa".to_string(), "psync2".to_string());
+        println!("Got capa resp {:?}", resp);
     }
 
 
