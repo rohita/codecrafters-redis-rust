@@ -27,6 +27,15 @@ impl ReplicaClient {
         self.call(command)
     }
 
+    pub fn psync(&mut self) -> Value {
+        let mut items = vec![];
+        items.push(Value::BulkString("PSYNC".to_string()));
+        items.push(Value::BulkString("?".to_string()));
+        items.push(Value::BulkString("-1".to_string()));
+        let command = Value::Array(items);
+        self.call(command)
+    }
+
     fn call(&mut self, cmd: Value) -> Value {
         self.handler.write_value(cmd).unwrap();
         let resp = self.handler.read_value().unwrap();

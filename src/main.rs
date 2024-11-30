@@ -37,6 +37,8 @@ fn main() {
         println!("Got listening-port resp {:?}", resp);
         let resp = master.replconf("capa".to_string(), "psync2".to_string());
         println!("Got capa resp {:?}", resp);
+        let resp = master.psync();
+        println!("Got psync resp {:?}", resp);
     }
 
 
