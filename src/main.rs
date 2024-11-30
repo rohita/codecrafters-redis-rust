@@ -17,21 +17,8 @@ fn main() {
     println!("{:?}", args);
 
     for index in (1..args.len()).step_by(2) {
-        // if args[index] == "--dir" {
-        //     config.insert("dir".to_string(), args[index + 1].to_string());
-        // } else if args[index] == "--dbfilename" {
-        //     config.insert("dbfilename".to_string(), args[index + 1].to_string());
-        // } else if args[index] == "--port" {
-        //     port = args[index + 1].to_string();
-        // }
-
-        match args[index].as_str() {
-            "--dir" =>  config.insert("dir".to_string(), args[index + 1].to_string()),
-            "--dbfilename" => config.insert("dbfilename".to_string(), args[index + 1].to_string()),
-            "--port" => config.insert("port".to_string(), args[index + 1].to_string()),
-            "--replicaof" => config.insert("replicaof".to_string(), args[index + 1].to_string()),
-            &_ => todo!(),
-        };
+        let config_key = args[index].get(2..).unwrap().to_string();
+        config.insert(config_key, args[index + 1].to_string());
     }
 
     println!("Config: {:?}", config);
