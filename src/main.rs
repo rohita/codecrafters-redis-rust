@@ -4,6 +4,7 @@ use std::default::Default;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
+use std::io::Write;
 use anyhow::Result;
 use resp::Value;
 
@@ -25,6 +26,15 @@ fn main() {
     let port: String = config.get("port").unwrap_or(&"6379".to_string()).to_string();
     let listener = TcpListener::bind(format!("127.0.0.1:{port}")).unwrap();
     let storage = db::Db::from_config(config.clone());
+
+    if let Some(master) = config.get("replicaof") {
+        let addr = master.replace(' ', ":");
+        let mut sock = TcpStream::connect(addr).unwrap();
+
+        let ping_resp = Value::Array(vec![Value::BulkString("PING".to_string())]);
+        sock.write_all(ping_resp.serialize().as_bytes()).unwrap();
+    }
+
 
     // stream represents the incoming connection
     for stream in listener.incoming() {
